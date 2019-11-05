@@ -1,0 +1,65 @@
+form {
+    background-color: rgb(252, 255, 79);
+    display: flex;
+    text-align: center;
+    border: 3px solid #f1f1f1;
+    width:50%;
+    padding: 10px;
+    margin-top: 10%;
+    margin-left: 10%;
+    border-radius: 5px;
+}
+
+/* Full-width inputs */
+input[type=text], input[type=number], input[type=password] {
+  width: 60%;
+  padding: 5px 10px;
+  margin: 8px 0;
+  display: inline-block;
+  border: 1px solid #ccc;
+  box-sizing: border-box;
+}
+
+/* Set a style for all buttons */
+button {
+  background-color: #4CAF50;
+  color: white;
+  padding: 14px 20px;
+  margin: 8px 0;
+  border: none;
+  cursor: pointer;
+  width: 60%;
+}
+
+/* Add a hover effect for buttons */
+button:hover {
+  opacity: 0.8;
+}
+
+.container {
+  text-align: center;
+padding: 16px;
+}
+
+h2{
+  color: white;
+  padding:5px;
+  writing-mode:vertical-lr;
+  text-orientation:upright;
+  display:block;
+  margin: 0;
+  background-color: #4CAF50;
+  align-items: center;
+  width:30px;
+}
+.container {
+  text-align: center;
+padding: 16px;
+}
+label{
+  width:70px;
+  height:90px; 
+}
+span{
+  text-align: center;
+}
