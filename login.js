@@ -143,14 +143,7 @@ app.get('/suppliers', function(req, res) {
 
         });
         });
-        app.get('/appoint', function(req, res) {
-
-        connection.query('SELECT * FROM visitors WHERE visitor_id in (select visitor_id from has where prisoner_id=?)', req.query['category'] , function(error, results, fields) {
-        console.log(results);
-        res.render('visitors.html',{visitors:results,id:req.query['category']});
-
-        });
-        });
+     
         app.get('/rouInventory', function(req, res) {
         console.log("inside rou inventory");
         connection.query('SELECT * FROM PRODUCTS ', function(error, results, fields) {
@@ -162,53 +155,8 @@ app.get('/suppliers', function(req, res) {
         console.log("inside roucust");
         res.render('customer.html');
         });
-        app.post('/addVis',function(request,response){
-        fname=request.body.fname;
-        lname=request.body.lname;
-        vid=request.body.vid;
-        pid=request.body.id;
-        var res=[];
-        if (fname && lname && vid) {                                                                                                                            
-        connection.query('insert into visitors values (?,?,?)', [vid,fname,lname] , function(error, results, fields) {
-        if(error)console.log("error");
-         connection.query('insert into has values(?,?)',[vid,pid],function(error,result,fields){
-        if(error)console.log("error");
-        connection.query('SELECT * FROM visitors WHERE visitor_id in (select visitor_id from has where prisoner_id=?)', pid , function(error, results, fields) {
-         });
-         });
-        });
-        }
-        });
-    
-        // console.log(results.username);
+        
 
-       
-
-      app.post('/addCriminal',function(request,response){
-            console.log("inside addCust");
-            cname=request.body.cname;
-            cadd=request.body.cadd;
-            ccont=request.body.ccont;
-            eid=id;
-            var res=[];
-            if (cname && ccont &&cadd) {                                                                                                                            
-                connection.query('insert into CUSTOMER values (?,?,?,?,?)', ['default',cname,cadd,ccont,eid] , function(error, results, fields){
-                    if(error)console.log("error");
-        //response.render('order.html',{cname:cname});
-        //  connection.query('insert into commited values(?,?)',[cid,pid],function(error,result,fields){
-        //   if(error)console.log("error");     
-        //  }
-        //);
-        //      connection.query('SELECT * FROM visitors ', function(error, results, fields) {// console.log(results);
-        console.log("here");
-        response.redirect('back');  
-        response.end();     
-        });
-            }else {
-              response.send('Please enter Username and Password!');
-              response.end();
-          }
-        });
 
    app.post('/addCust',function(request,response){ 
         console.log("inside addCust");
@@ -235,7 +183,7 @@ app.get('/suppliers', function(req, res) {
 
         });
         });
-    //response.redirect('back');
+
             response.redirect("/rouOrder");
     }
         else {
@@ -310,7 +258,12 @@ app.post('/addProdOrder',function(request,response){
            connection.query('select *from PRODUCT where pid=?',[pid], function(error, results, fields){
             if(error)console.log('FIRST SELECT '+error);
             console.log('results:'+results[0].Mprice);
-            tprice=qty*results[0].Mprice;  
+            tprice=qty*results[0].Mprice;
+            diff=results[0].pqty-qty;
+            if(diff<0) 
+            connection.query('UPDATE PRODUCTS SET pqty=? where pid=?',[diff,pid],function(error,results,fields){
+              if(error)console.log(error);
+            });
            connection.query('insert into ORDERLIST value(?,?,?,?,?)',[pid,oid,qty,results[0].Mprice,tprice], function(error, results, fields){
             if(error)console.log('SELECT SECOND '+error);
             response.redirect('back');  
@@ -467,29 +420,35 @@ app.post('/searchSupplier', function(req, res) {
     
 
  
+      var ssid;
         app.get('/rousupplyorder',function(request,response){
-          sid=request.query['sid'];
+          ssid=request.query['sid'];
           eid=id;
-           connection.query('insert into ORDERSUPPLYTABLE value(default,CURDATE(),?,?,?)',[0,sid,eid], function(error, results, fields){
+          var supply=[];
+           connection.query('insert into ORDERSUPPLYTABLE value(default,CURDATE(),?,?,?)',[0,ssid,eid], function(error, results, fields){
                 if(error)console.log("first"+error);
+                response.redirect('/supplyintermediate');
                
-                connection.query('SELECT *FROM ORDERSUPPLYTABLE ', function(error, results, fields){
+         });});;
+        app.get('/supplyintermediate',function(req,res){
+                  connection.query('SELECT *FROM ORDERSUPPLYTABLE ', function(error, results, fields){
                 if(error)console.log("second"+error);
                   oid=results[results.length-1].oid;
-                connection.query('SELECT *FROM PRODUCTS WHERE sid=?',[sid], function(error, results, fields){
+                connection.query('SELECT *FROM PRODUCTS WHERE sid=?',[ssid], function(error, results, fields){
                 if(error)console.log("thirrd "+error);
                   pid=results[0].pid;
-                  console.log("pid sid oid id "+pid+" "+sid+" "+oid);
-       connection.query('SELECT *FROM ORDERSUPPLYLIST WHERE oid=?',[sid], function(error, results, fields){
+                  console.log("pid sid oid id "+pid+" "+ssid+" "+oid);
+       connection.query('SELECT *FROM ORDERSUPPLYLIST WHERE oid=?',[oid], function(error, results, fields){
                 if(error)console.log("fourth "+error);
-                console.log(results);
-            response.render("supply_order.html",{pid:pid,sid:sid,oid:oid});
+                console.log("supply order "+results);
+            res.render("supply_order.html",{pid:pid,sid:ssid,oid:oid,supply:results});
             });
 
 
 });
 
- });  });});;
+ }); 
+        });
  app.post('/supplyorderdata',function(req,res){
   qty=req.body.qty;
   pid=req.body.pid;
@@ -499,17 +458,22 @@ app.post('/searchSupplier', function(req, res) {
   connection.query('select *from PRODUCTS where pid=?',[pid],function(error,results,fields){
     console.log(results);
     tprice=qty*results[0].pprice;
+     diff=results[0].pqty+qty;
+            if(diff<0) 
+            connection.query('UPDATE PRODUCTS SET pqty=? where pid=?',[diff,pid],function(error,results,fields){
+              if(error)console.log(error);
+            });
 console.log("tprce and price"+tprice+" "+results[0].pprice);
   connection.query('insert into ORDERSUPPLYLIST values (?,?,?,?,?)',[pid,oid,qty,results[0].pprice,tprice], function(error, results, fields){
             if(error)console.log('SELECT SECOND '+error);
-            console.log("RESULTS IN SUPPLIER"+results);
-            connection.query('select * from ORDERSUPPLYLIST ', function(error, results, fields){
+            
+        /*   connection.query('select * from ORDERSUPPLYLIST where oid=?',[oid], function(error, results, fields){
             if(error)console.log('SELECT SECOND '+error);
+            console.log("RESULTS IN SUPPLIER"+results[0]);
             oid=results[results.length-1].oid;
-          });});});
+          });*/});});
   res.redirect('back');
  });
-
         app.get('/editEmpF', function(req, res) {
     console.log('/editEmp');
     console.log(req.query['category']);
@@ -577,6 +541,26 @@ app.get('/rouStats', function(request,response) {
      response.render('stats.html',{profit:results[0].sum,profit2:null});
    });
 });
+
+app.post('/sendDate', function(request, response) {
+  console.log('/senDate')
+ // profit =request.body.profit2;
+  date = request.body.pdate;
+  //console.log(profit);
+  console.log(date);
+  if (date) {
+  connection.query('select sum(ototal) as sum from ORDERTABLE where  odate=?', [date] , function(error, results, fields) {
+       if (error)  throw error;
+       console.log(results);
+       console.log(results[0].sum);
+      response.render('stats.html',{profit:results[0].sum});
+    });
+  } else {
+    response.send('Please enter Email Id and Password!');
+    response.end();
+  }
+});
+
       app.use('/', router);
 
         app.listen(8800);
