@@ -2,44 +2,147 @@
 <html>
     <head>
         <title>STATS-Profit</title>
-        <link rel="stylesheet" href="../forms.css">
-        <link rel="stylesheet" href="../table.css">
-        <link rel="stylesheet" href="../navig.css">
         <style>
-        body{   background-color: rgb(253, 255, 148)      }
+          input[type=date], input[type=number], input[type=password],input[type=tel] {
+  width: 10%;
+  height: 10%;
+  padding: 5px 10px;
+  margin: 8px 0;
+  display: inline-block;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-sizing: border-box;
+}
+        body{     background-color: rgb(253, 255, 148)        }
+          h2{   width:60px;   }
+          form{ margin-top: 3%;  margin-left: 5%;}
+          body{   background-color: white  } 
+                    ul {
+                background-color:#442C2E;
+                height: 50px;
+                list-style-type: none;
+                margin: 0;
+                padding: 0;
+                overflow: hidden;
+                writing-mode: horizontal-lr;
+                 }
+                 li a {
+            display: block;
+            color: white;
+            text-align: center;
+            padding: 14px 16px;
+            text-decoration: none;
+            transition: all 1s;
+            }
+            button {
+              background-color: white;
+              color: #442C2e;
+              padding: 5px 10px;
+              margin: 8px 0;
+              border: 1;
+              border-color: #442C2e;
+              border-radius: 8px;
+              cursor: pointer;
+              width: 5%;
+              transition: all 1s;
+            }
+            .button1{
+              background-color:  rgb(124, 68, 71);
+              color: white;
+              padding: 10px 15px;
+              margin: 8px 0;
+              float:right;
+              border: 1;
+              border-color:  rgb(124, 68, 71);
+              border-radius: 5%;
+              
+              cursor: pointer;
+              width: 110px;
+              transition: all 1s;
+              margin-bottom: 10px;
+            }
+            .button1:hover{ background-color:white;
+              border-color: #502C2e;
+              transform:scale(1.1); 
+            color:#502C2e;}
+            
+            button:hover{ background-color:#502C2e;
+              transform:scale(1.1); 
+            color:white;}
+            li a:hover {
+            background-color:#502C2e;
+            transform: scale(1.1);
+            }
+            li b{
+                    display: block;
+                    color: white;
+                    font-size: 130%;
+                    text-align: center;
+                    padding: 14px 16px;
+                  }
+                   
+            /*table.center { margin-left:auto; margin-right:auto; } */
+            table { width: 1250px; align-content: center; margin-left:auto; margin-right:auto; border: 1; color: #502C2e;}
+                th { padding: 7px 10px 10px 10px;}
+                td { padding: 2px 10px;}
+                th {
+                text-transform: uppercase;
+                letter-spacing: 0.1em;
+                font-size: 95%;
+                border-bottom: 2px solid #111111;
+                border-top: 1px solid #999;
+                text-align: left;
+                font-weight: bolder;
+                }
+                tr.even {
+                background-color: #efefef;
+                border-bottom: 2px solid #111111;}
+                div ,table{   float: center;  }
     </style>
     </head>
     <body>
             <ul> 
-              <li style="float:right; " onclick="window.location.href='/homepg'"><a style="color:red">home</a></li>              
+              <li style="float:right; " onclick="window.location.href='/home'"><a >home</a></li>              
               <li style="float:right" onclick="window.location.href='/sales'"><a >Sales</a></li>
                 <li style="float:right" onclick="window.location.href='/customer'"><a >Customer</a></li>
                 <li style="float:right" onclick="window.location.href='/suppliers'"><a >Suppliers</a></li>
                 <li style="float:right" onclick="window.location.href='/rouEmployees'"><a >Employees</a></li>
-                <li style="float:left"><b>Income</b></li>
+                <li style="float:left"><b>ODER DETAILS</b></li>
             </ul>
             
             <br><hr><br>
-        <h4>Profit  on( date )</h4>
-        <form action="/sendDate" method="POST"><input type="date" value="2019-10-30" name="pdate"><input type="submit"> </form>
-           
-          <h4>Profit:</h4> <%= profit %><br>
+        
          <form action="/rouBet" method="POST">
 
           <input type="date"  value="2019-10-30"  name="fdate"   >
           <input   type="date"   value="2019-10-30" name="ldate"   >
-          <input type="submit">
+          <button>submit</button>
          </form>
-         <h3><%= profit2 %></h3>
-            <div><table>
-              <tr>
-                <th></th>
-                <th></th>
-                <th></th>
-                <th></th>
-                <th></th>
-              </tr>
-            </table>
+         
+            <div> <table class="table table-hover">
+                <thead>
+                <tr>
+                  <th>OID</th>
+                  <th>ODATE</th>
+                  <th>OTATAL</th>
+                  
+                
+                </tr>
+                </thead>
+               <tbody>
+                  <% betweendate.forEach(function(betweendate) { %>
+                <tr>
+                    
+                  <td><%= betweendate.oid %>  </td>
+                  <td><%=betweendate.odate %></td> 
+                  <td><%=betweendate.ototal%></td>
+                  
+
+                                  
+                                </tr>
+                <% }); %>
+               </tbody>
+               </table>
           </div>          
 </body>
-</html>
+</html>  

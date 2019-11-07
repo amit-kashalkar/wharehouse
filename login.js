@@ -26,7 +26,7 @@
         app.use(express.static( __dirname +'/public/css'));
         app.engine('html', require('ejs').renderFile);
         app.set('view engine', 'html');
-
+var id;
         app.get('/', function(request, response) {
         response.sendFile(path.join(__dirname + '/login1.html'));
 
@@ -64,13 +64,56 @@
         response.end();
         }
         });
-
 app.get('/sales', function(req, res) {
   console.log('/sales');
-   connection.query('');
-    res.render('sales.html');
+  connection.query('select p.pid,p.pname,sum(o.qty) as QTY_SOLD,p.sprice,p.pprice,sum(o.tprice) as profit from PRODUCTS as p join ORDERLIST as o where o.pid=p.pid group by p.pid ;' , function(error, results, fields) {
+    if (error)  throw error;
+    console.log(results); 
+      res.render('sales.html',{products:results});
+      
+    });   
+  
   });
-
+  app.get('/QTYASC', function(req, res) {
+    console.log('/sales');
+    connection.query('select p.pid,p.pname,sum(o.qty) as QTY_SOLD,p.sprice,p.pprice,sum(o.tprice) as profit from PRODUCTS as p join ORDERLIST  as o where o.pid=p.pid group by p.pid order by QTY_SOLD asc;' , function(error, results, fields) {
+      if (error)  throw error;
+      console.log(results); 
+        res.render('sales.html',{products:results});
+        
+      });   
+    
+    });
+    app.get('/QTYDES', function(req, res) {
+      console.log('/sales');
+      connection.query('select p.pid,p.pname,sum(o.qty) as QTY_SOLD,p.sprice,p.pprice,sum(o.tprice) as profit from PRODUCTS as p join ORDERLIST as o where o.pid=p.pid group by p.pid order by QTY_SOLD desc;' , function(error, results, fields) {
+        if (error)  throw error;
+        console.log(results); 
+          res.render('sales.html',{products:results});
+          
+        });   
+      
+      });
+      app.get('/PRODES', function(req, res) {
+        console.log('/sales');
+        connection.query('select p.pid,p.pname,sum(o.qty) as QTY_SOLD,p.sprice,p.pprice,sum(o.tprice) as profit from PRODUCTS as p join ORDERLIST as o where o.pid=p.pid group by p.pid order by profit desc;' , function(error, results, fields) {
+          if (error)  throw error;
+          console.log(results); 
+            res.render('sales.html',{products:results});
+            
+          });   
+        
+        });
+        app.get('/PROASC', function(req, res) {
+          console.log('/sales');
+          connection.query('select p.pid,p.pname,sum(o.qty) as QTY_SOLD,p.sprice,p.pprice,sum(o.tprice) as profit from PRODUCTS as p join ORDERLIST as o where o.pid=p.pid group by p.pid order by profit asc;' , function(error, results, fields) {
+            if (error)  throw error;
+            console.log(results); 
+              res.render('sales.html',{products:results});
+              
+            });   
+          
+          });
 app.get('/delEmp', function(req, res) {
   console.log('/delEmp');
   console.log(req.query['category']);
@@ -83,19 +126,15 @@ app.get('/delEmp', function(req, res) {
   });
 app.get('/customer', function(req, res) {
   console.log('/customer');
-  var prisoners=[];
-  connection.query('select * from CUSTOMER',function(errors,results,fields){
-    if(errors)console.log(errors);
-    console.log(results);
-    res.render('customerdetails.html',{prisoners:results});
-   /* for(var i=0;i<=results.length-1;i++)
-        {prisoners.push(results[i]);
-                //priso.push(results[i].prisoner_id);
-            }
+  connection.query(' select c.cname,c.contact,sum(ototal) as sum from CUSTOMER as c join ORDERTABLE as o on c.cid=o.cid group by c.cname,c.contact' , function(error, results, fields) {
+    if (error)  throw error;
+    console.log(results); 
+
+    console.log(results[0].sum);
+      res.render('customerdetails.html',{customer:results});
+      
+    });    
   });
-  console.log(prisoners);
-  */
-  });});
  
 app.get('/suppliers', function(req, res) {
   console.log('/suppliers');
@@ -134,13 +173,11 @@ app.get('/suppliers', function(req, res) {
 
         }
         });
-
         });
         app.get('/here', function(req, res) {
         console.log('Category: ' + req.query['category']);
         connection.query('SELECT * FROM prisoners WHERE prisoner_id=?', req.query['category'] , function(error, results, fields) {
         res.render('prisoner.html',{prisoner:results});
-
         });
         });
      
@@ -164,8 +201,8 @@ app.get('/suppliers', function(req, res) {
         cadd=request.body.cadd;
         ccont=request.body.ccont;
         eid=id;
-        trial=request.body.trial;
-        console.log("trial is "+trial);
+        
+        
         var res=[];
         if (cname && ccont &&cadd) { 
         console.log("jst before");                                                                                                                           
@@ -204,11 +241,12 @@ app.get('/suppliers', function(req, res) {
             cid=results[results.length-1].cid;
             //console.log("fields customer:"+fields);
            
-                connection.query('select *from ORDERTABLE',function(errors,results,fields){
+                connection.query('select * from ORDERTABLE ',function(errors,results,fields){
                 if(errors)console.log(errors);
+                console.log(results);
             console.log("results oid in customer"+results[results.length-1].oid);
             oid=results[results.length-1].oid;
-        
+                    
             connection.query('SELECT * FROM ORDERLIST WHERE oid=? ',[oid],
             function(errors, results, fields) {
              console.log(results);
@@ -219,16 +257,15 @@ app.get('/suppliers', function(req, res) {
         //console.log(prisoners);
          //for(var i=0;i<=1;i++)
                 console.log(orderList);  
-     
+     var sum;
              connection.query('select *from CUSTOMER',function(errors,results,fields){
                 if(errors)console.log(errors);
             console.log("results oid in customer"+oid+" and cid ");
-            connection.query('select sum(tprice)from ORDERLIST group by oid',function(errors,results,fields){
-                console.log("sum results :"+results[0].sum);
-            })
-            response.render('order.html',{orderList:orderList,cid:cid,oid:oid,cname:results[results.length-1].cname,cadd:results[results.length-1].cadd,ccont:results[results.length-1].contact});
-response.end(); 
-        });
+          
+          
+            response.render('order.html',{sum:sum,orderList:orderList,cid:cid,oid:oid,cname:results[results.length-1].cname,cadd:results[results.length-1].cadd,ccont:results[results.length-1].contact});
+response.end();
+        }); });
          });
                                 
             
@@ -240,7 +277,7 @@ response.end();
         });    
 
 
-});
+
 
         //      connection.query('SELECT * FROM visitors ', function(error, results, fields) {
         // console.log(results);
@@ -255,16 +292,16 @@ app.post('/addProdOrder',function(request,response){
            var price;
            console.log("inside addProdOrder");
            console.log("pid is "+pid);
-           connection.query('select *from PRODUCT where pid=?',[pid], function(error, results, fields){
+           connection.query('select *from PRODUCTS where pid=?',[pid], function(error, results, fields){
             if(error)console.log('FIRST SELECT '+error);
-            console.log('results:'+results[0].Mprice);
-            tprice=qty*results[0].Mprice;
+            console.log('results:'+results[0].sprice);
+            tprice=qty*results[0].sprice;
             diff=results[0].pqty-qty;
-            if(diff<0) 
+         
             connection.query('UPDATE PRODUCTS SET pqty=? where pid=?',[diff,pid],function(error,results,fields){
               if(error)console.log(error);
             });
-           connection.query('insert into ORDERLIST value(?,?,?,?,?)',[pid,oid,qty,results[0].Mprice,tprice], function(error, results, fields){
+           connection.query('insert into ORDERLIST value(?,?,?,?,?)',[pid,oid,qty,results[0].sprice,tprice], function(error, results, fields){
             if(error)console.log('SELECT SECOND '+error);
             response.redirect('back');  
         response.end(); 
@@ -295,7 +332,7 @@ app.post('/searchProduct', function(req, res) {
     }
     else if(attribute == 'pname'){
         console.log('inside pname');
-         connection.query('select * from PRODUCTS where pname=?',[search] , function(error, results, fields) {
+         connection.query('select * from PRODUCTS where pname  =?',[search] , function(error, results, fields) {
             if(error) throw error;
             console.log(results);
             res.render('inve.html',{products:results});
@@ -381,9 +418,7 @@ app.post('/searchSupplier', function(req, res) {
                 res.render('supplier_info.html',{supplier:results});
             });
             }
-           
-              
-                  
+                     
     else{
         console.log('inside default');
         
@@ -419,12 +454,12 @@ app.post('/searchSupplier', function(req, res) {
 
     
 
- 
       var ssid;
         app.get('/rousupplyorder',function(request,response){
           ssid=request.query['sid'];
           eid=id;
           var supply=[];
+          console.log("ssid "+ssid);
            connection.query('insert into ORDERSUPPLYTABLE value(default,CURDATE(),?,?,?)',[0,ssid,eid], function(error, results, fields){
                 if(error)console.log("first"+error);
                 response.redirect('/supplyintermediate');
@@ -474,10 +509,11 @@ console.log("tprce and price"+tprice+" "+results[0].pprice);
           });*/});});
   res.redirect('back');
  });
-        app.get('/editEmpF', function(req, res) {
+        
+    app.get('/editEmpF', function(req, res) {
     console.log('/editEmp');
     console.log(req.query['category']);
-    connection.query('select * from employee WHERE eid=?', req.query['category'] , function(error, results, fields) {
+    connection.query('select * from EMPLOYEE WHERE eid=?', req.query['category'] , function(error, results, fields) {
       if(error) throw error;
       console.log(results);
       res.render('editEmp.html',{emp:results});
@@ -492,13 +528,13 @@ app.post('/editEmp',function(request,response){
   salary=request.body.salary;
   console.log(eid);
   if(ename && eid)
-    connection.query('UPDATE employee set ename=? where eid=?',[ename,eid]); 
+    connection.query('UPDATE EMPLOYEE set ename=? where eid=?',[ename,eid]); 
     if(eadd && eid) 
-    connection.query('UPDATE employee set eadd=? where eid=?',[eadd,eid]);
+    connection.query('UPDATE EMPLOYEE set edd=? where eid=?',[eadd,eid]);
   if(econt && eid) 
-    connection.query('UPDATE employee set scontact=? where eid=?',[econt,eid]);
+    connection.query('UPDATE EMPLOYEE set econtact=? where eid=?',[econt,eid]);
   if(salary && eid) 
-    connection.query('UPDATE employee set salary=? where eid=?',[salary,eid]);
+    connection.query('UPDATE EMPLOYEE set esalary=? where eid=?',[salary,eid]);
      response.redirect('/rouEmployees');
   });
 
@@ -511,11 +547,13 @@ app.post('/editEmp',function(request,response){
 
 
   app.post('/addEmp',function(request,response){
+    eid=request.body.eid;
     ename=request.body.ename;
     eadd=request.body.eadd;
     econt=request.body.econt;
     salary=request.body.salary;
-    connection.query('insert into EMPLOYEE values(default,?,?,?,?)', [ename,eadd,econt,salary] , function(error, results, fields) {
+    pass=request.body.pass;
+    connection.query('insert into EMPLOYEE values(?,?,?,?,?,?)', [eid,ename,eadd,econt,salary,pass] , function(error, results, fields) {
       console.log(results);  
        if(error)throw error;
        response.redirect('/rouEmployees')
@@ -538,7 +576,8 @@ app.get('/rouStats', function(request,response) {
   connection.query('select sum(ototal) as sum from ORDERTABLE where  odate=?', [date] , function(error, results, fields) {
     if (error)  throw error;
     console.log(results[0].sum);
-     response.render('stats.html',{profit:results[0].sum,profit2:null});
+    var betweendate=[];
+     response.render('stats.html',{profit:results[0].sum,profit2:null,betweendate:betweendate});
    });
 });
 
@@ -560,7 +599,115 @@ app.post('/sendDate', function(request, response) {
     response.end();
   }
 });
+app.post('/roubet', function(request, response) {
+  console.log('/roubet')
+ fdate =request.body.fdate;
+  ldate = request.body.ldate;
+  //console.log(profit);
+  console.log(fdate+" "+ldate);
+  if (fdate && ldate) {
+  connection.query('select * from ORDERTABLE WHERE odate BETWEEN ? and ?', [fdate,ldate] , function(error, results, fields) {
+       if (error)  throw error;
+       console.log(results);
+      // console.log();
+      response.render('stats.html',{betweendate:results});
+    });
+  } else {
+    response.send('Please enter Email Id and Password!');
+    response.end();
+  }
+});
 
+
+app.get('/product', function(req, res) {
+  console.log('product detail');
+  console.log(req.query['category']);
+  connection.query('SELECT * FROM PRODUCTS WHERE sid=?', req.query['category'] , function(error, results, fields) {
+    if(error) throw error;
+    console.log(results);
+    res.render('inve.html',{products:results});
+  
+  });
+  });
+
+app.get('/editSupplierF', function(req, res) {
+    console.log('/editSupplier');
+    console.log(req.query['category']);
+    connection.query('select * from SUPPLIER WHERE sid=?', req.query['category'] , function(error, results, fields) {
+      if(error) throw error;
+      console.log(results);
+      res.render('editSupplier.html',{sup:results});
+    });
+    });
+
+app.post('/editSupp',function(request,response){
+  eid=request.body.eid;
+  ename=request.body.ename;
+  eadd=request.body.eadd;
+  econt=request.body.econt;
+  salary=request.body.salary;
+  console.log(eid);
+  if(ename && eid)
+    connection.query('UPDATE SUPPLIER set sname=? where sid=?',[ename,eid]); 
+    if(eadd && eid) 
+    connection.query('UPDATE SUPPLIER set sadd=? where sid=?',[eadd,eid]);
+  if(econt && eid) 
+    connection.query('UPDATE SUPPLIER set scontact=? where sid=?',[econt,eid]);
+
+     response.redirect('/suppliers');
+  });
+
+app.get('/addSupF',function(request,response){
+      response.render('addSup.html');
+    }
+    );
+  app.get('/roudone',function(request,response){
+  oid=request.query['oid'];
+  console.log("oid in roudonw "+oid);
+  connection.query('select sum(tprice) as sum from ORDERLIST where oid=? ',[oid],function(errors,results,fields){
+    if(errors)console.log(errors);
+    console.log(results);
+    sum=results[0].sum;
+    console.log("sum is "+sum)
+    connection.query('UPDATE ORDERTABLE SET ototal=? where oid=?',[sum,oid],function(errors,results,fields){
+      if(errors)console.log(errors);
+    });
+     connection.query('select *from ORDERLIST WHERE oid=? ',[oid],function(errors,results,fields){
+    if(errors)console.log(errors);
+    console.log(results);
+    response.render('bill.html',{orderList:results,sum:sum});
+});
+  });
+  });
+  
+    app.post('/addSup',function(request,response){
+       eid=request.body.eid;
+      ename=request.body.ename;
+      eadd=request.body.eadd;
+      econt=request.body.econt;
+      pid=request.body.pid;
+      pname=request.body.pname;
+      cost=request.body.cost;
+      mprice=request.body.mprice;
+      category=request.body.category;
+      connection.query('insert into SUPPLIER values(?,?,?,?)', [eid,ename,eadd,econt] , function(error, results, fields) {
+        console.log('add s'+results);  
+         if(error)throw error;
+         connection.query('insert into PRODUCTS values(?,?,?,?,?,?,?,?)', [pid,eid,pname,cost,mprice,0,0,category] , function(error, results, fields) {
+        console.log('inser'+results);  
+         if(error)throw error;
+         response.redirect('/suppliers')
+        
+      });
+    });
+      });
+
+app.get('/roudone',function(req,res){
+  connection.query('UPDATE ORDERTABLE SET ototal=? where oid=?',[ototal,oid],function(errors,results,fields){
+    if(errors)console.log(errors);
+  });
+  res.redirect('/addCust');
+});
       app.use('/', router);
 
         app.listen(8800);
